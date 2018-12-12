@@ -26,33 +26,34 @@ class Budget(models.Model):
 		('Health', 'Health'),
 		('Emergency', 'Emergency'),
 		('Entertainment', 'Entertainment'),
-		('Mandatory', 'Mandatory'),
 		('Others', 'Others')
 	)
 
-	profile= models.ForeignKey(Profile, default=1, related_name='budget',  on_delete=models.CASCADE)
+	profile= models.ForeignKey(Profile, default=1, related_name='budgets',  on_delete=models.CASCADE)
 	label=models.CharField(max_length=120)
 	category = models.CharField(max_length=13, choices=TYPE_CHOICE)
 	amount = models.DecimalField( max_digits=10, decimal_places=3)
 	
+	
 	def __str__(self):
-		return self.category
+		return self.label
 
-class Expenses(models.Model):
-	OCCURANCE_CHOICE = (
-		('None', 'None'),
-		('Daily', 'Daily'),
-		('Weekly', 'Weekly'),
-		('Monthly', 'Monthly'),
-		('Annually', 'Annually')
-		)
+class Transaction(models.Model):
 
-	budget = models.OneToOneField(Budget, on_delete=models.CASCADE)
+	user= models.ForeignKey(User, default=1, related_name='transactions',  on_delete=models.CASCADE)
+	budget = models.ForeignKey(Budget, default=1, related_name='transactions', on_delete=models.CASCADE)
 	amount = models.DecimalField( max_digits=10, decimal_places=3)
 	label = models.CharField(max_length=120)
-	date = models.DateField(null=True)
-	occurances=models.CharField(max_length=8, choices=OCCURANCE_CHOICE)
+	date = models.DateField(auto_now_add=True)
 
+	def __str__(self):
+		return self.label
+
+class Expense(models.Model):
+	profile= models.ForeignKey(Profile, default=1, related_name='expenses',  on_delete=models.CASCADE)
+	label=models.CharField(max_length=120)
+	amount = models.DecimalField( max_digits=10, decimal_places=3)
+	
 	def __str__(self):
 		return self.label
 
