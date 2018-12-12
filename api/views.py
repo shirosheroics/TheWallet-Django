@@ -1,4 +1,5 @@
-from .models import (Expenses, Budget, Profile)
+from .models import (Expense, Transaction, Budget, Profile)
+from django.contrib.auth.models import User
 from rest_framework.generics import (
 	ListAPIView,
 	RetrieveAPIView,
@@ -11,16 +12,20 @@ from .serializers import (UserCreateSerializer, UserLoginSerializer)
 # Budget
 from .serializers import (
 BudgetSerializer, 
-BudgetCreateUpdateSerializer, 
-BudgetAmountUpdateSerializer )
+BudgetCreateUpdateSerializer )
 
-# Expenses
+# Expense
 from .serializers import (
-ExpensesSerializer,
-ExpensesCreateUpdateSerializer)
+ExpenseSerializer, 
+ExpenseCreateUpdateSerializer )
+
+# Transaction
+from .serializers import (
+TransactionSerializer,
+TransactionCreateUpdateSerializer)
 
 # Profile
-from .serializers import (ProfileSerializer)
+from .serializers import (ProfileSerializer, ProfileCreateUpdateSerializer)
 
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -48,12 +53,44 @@ class ProfileDetailAPIView(RetrieveAPIView):
 	def get(self, request, format=None):
 		if request.user.is_anonymous:
 			return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-		profile = ProfileDetailViewSerializer(Profile.objects.get(user=request.user))
+		profile = ProfileSerializer(Profile.objects.get(user=request.user))
 		return Response(profile.data, status=HTTP_200_OK)
 
-class ExpensesListAPIView(ListAPIView):
-	queryset = Expenses.objects.all()
-	serializer_class = ExpensesSerializer
+class ProfileUpdateAPIView(RetrieveUpdateAPIView):
+	serializer_class = ProfileCreateUpdateSerializer
+	permission_classes =[IsAuthenticated]
+
+	def get(self, request, format=None):
+		if request.user.is_anonymous:
+			return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		profile = ProfileSerializer(Profile.objects.get(user=request.user))
+		return Response(profile.data, status=HTTP_200_OK)
+	
+	def put(self, request, format=None):
+		if request.user.is_anonymous:
+			return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		my_data = request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			# new_data = {
+			# 	'phoneNo': valid_data['phoneNo'],
+			# 	'dob': valid_data['dob'],
+			# 	'gender': valid_data['gender'],
+			# 	'income': valid_data['income']
+			# }
+			profile=Profile.objects.get(user=request.user)
+			profile.phoneNo = valid_data['phoneNo']
+			profile.dob = valid_data['dob']
+			profile.gender = valid_data['gender']
+			profile.income = valid_data['income']
+			profile.save()
+			return Response(ProfileSerializer(profile).data, status=HTTP_200_OK)
+		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class TransactionListAPIView(ListAPIView):
+	queryset = Transaction.objects.all()
+	serializer_class = TransactionSerializer
 	permission_classes = [IsAuthenticated]
 
 	# def get(self, request, format=None):
@@ -62,8 +99,8 @@ class ExpensesListAPIView(ListAPIView):
 		# profile = ProfileDetailViewSerializer(Profile.objects.get(user=request.user))
 		# return Response(profile.data, status=HTTP_200_OK)
 
-class ExpensesCreateAPIView(CreateAPIView):
-	serializer_class = ExpensesCreateUpdateSerializer
+class TransactionCreateAPIView(CreateAPIView):
+	serializer_class = TransactionCreateUpdateSerializer
 	permission_classes = [IsAuthenticated]
 
 	def post(self, request):
@@ -72,21 +109,20 @@ class ExpensesCreateAPIView(CreateAPIView):
 		if serializer.is_valid():
 			valid_data = serializer.data
 			new_data = {
+				'user': User.objects.get(id=request.user.id),
 				'budget': Budget.objects.get(id=valid_data['budget']),
 				'amount': valid_data['amount'],
-				'label': valid_data['label'],
-				'date': valid_data['date'],
-				'occurances': valid_data['occurances']
+				'label': valid_data['label']
 			}
-			exp=Expenses.objects.create(**new_data)
-			return Response(ExpensesSerializer(exp).data, status=HTTP_200_OK)
+			trans=Transaction.objects.create(**new_data)
+			return Response(TransactionSerializer(trans).data, status=HTTP_200_OK)
 		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-class ExpensesCreateUpdateAPIView(RetrieveUpdateAPIView):
-	queryset = Expenses.objects.all()
-	serializer_class = ExpensesCreateUpdateSerializer
+class TransactionCreateUpdateAPIView(RetrieveUpdateAPIView):
+	queryset = Transaction.objects.all()
+	serializer_class = TransactionCreateUpdateSerializer
 	lookup_field = 'id'
-	lookup_url_kwarg = 'expenses_id'
+	lookup_url_kwarg = 'transaction_id'
 	permission_classes = [IsAuthenticated]
 
 class BudgetListAPIView(RetrieveAPIView):
@@ -97,7 +133,7 @@ class BudgetListAPIView(RetrieveAPIView):
 		if request.user.is_anonymous:
 			return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 		profile= Profile.objects.get(user=request.user)
-		budget =BudgetSerializer(Budget.objects.get(profile=profile))
+		budget =BudgetSerializer(Budget.objects.filter(profile=profile), many=True)
 		return Response(budget.data, status=HTTP_200_OK)
 
 class BudgetCreateAPIView(CreateAPIView):
@@ -126,10 +162,43 @@ class BudgetCreateUpdateAPIView(RetrieveUpdateAPIView):
 	lookup_url_kwarg = 'budget_id'
 	permission_classes = [IsAuthenticated]
 
-class BudgetAmountUpdateAPIView(RetrieveUpdateAPIView):
-	queryset = Budget.objects.all()
-	serializer_class = BudgetAmountUpdateSerializer
+
+#Expense
+
+class ExpenseListAPIView(RetrieveAPIView):
+	serializer_class = ExpenseSerializer
+	permission_classes =[IsAuthenticated]
+
+	def get(self, request, format=None):
+		if request.user.is_anonymous:
+			return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		profile= Profile.objects.get(user=request.user)
+		expenses =ExpenseSerializer(Expense.objects.filter(profile=profile.id),many=True)
+		return Response(expenses.data, status=HTTP_200_OK)
+
+class ExpenseCreateAPIView(CreateAPIView):
+	serializer_class = ExpenseCreateUpdateSerializer
+	permission_classes =[IsAuthenticated]
+
+	def post(self, request):
+		my_data = request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			new_data = {
+				'amount': valid_data['amount'],
+				'profile': Profile.objects.get(user=request.user.id),
+				'label': valid_data['label'],
+			}
+			exp = Expense.objects.create(**new_data)
+			return Response(ExpenseSerializer(exp).data, status=HTTP_200_OK)
+		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class ExpenseCreateUpdateAPIView(RetrieveUpdateAPIView):
+	queryset = Expense.objects.all()
+	serializer_class = ExpenseCreateUpdateSerializer
 	lookup_field = 'id'
-	lookup_url_kwarg = 'budget_id'
+	lookup_url_kwarg = 'expense_id'
 	permission_classes = [IsAuthenticated]
+
 

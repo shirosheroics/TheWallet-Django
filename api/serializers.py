@@ -1,21 +1,21 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import (Budget, Expenses, Profile )
+from .models import (Budget, Transaction, Profile , Expense)
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    class Meta:
-        model = User
-        fields = ['username', 'password']
+	password = serializers.CharField(write_only=True)
+	class Meta:
+		model = User
+		fields = ['username', 'password']
 
-    def create(self, validated_data):
-        username = validated_data['username']
-        password = validated_data['password']
-        new_user = User(username=username)
-        new_user.set_password(password)
-        new_user.save()
-        return validated_data
+	def create(self, validated_data):
+		username = validated_data['username']
+		password = validated_data['password']
+		new_user = User(username=username)
+		new_user.set_password(password)
+		new_user.save()
+		return validated_data
 
 class UserLoginSerializer(serializers.Serializer):
 	username = serializers.CharField()
@@ -52,68 +52,95 @@ class UserSerializer(serializers.ModelSerializer):
 		'email'
 			]
 
+class TransactionSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Transaction
+		fields=[
+			'id',
+			'user',
+			'budget',
+			'amount',
+			'label',
+			'date',
+		]
+
+class BudgetSerializer(serializers.ModelSerializer):
+	transactions = TransactionSerializer(many=True, read_only=True)
+	class Meta:
+		model = Budget
+		fields = [
+			'id',
+			'profile',
+			'label',
+			'category',
+			'amount',
+			'transactions'
+		]
+
 class ProfileSerializer(serializers.ModelSerializer):
 	user = UserSerializer()
+	budgets= BudgetSerializer(many=True, read_only=True)
 	class Meta:
 		model = Profile
 		fields = [  
 		'user',
-        'id',
+		'id',
+		'phoneNo',
+		'dob',
+		'gender',
+		'income',
+		'budgets'
+			]
+
+class ProfileCreateUpdateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Profile
+		fields = [  
 		'phoneNo',
 		'dob',
 		'gender',
 		'income'
 			]
 
-class BudgetSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
-    class Meta:
-        model = Budget
-        fields = [
-            'id',
-            'profile',
-            'label',
-            'category',
-            'amount'
-        ]
+class ExpenseSerializer(serializers.ModelSerializer):
+	# profile = ProfileSerializer()
+	class Meta:
+		model = Expense
+		fields = [
+			'id',
+			'profile',
+			'label',
+			'amount'
+		]
 
-class ExpensesSerializer(serializers.ModelSerializer):
-    budget = BudgetSerializer()
-    class Meta:
-        model = Expenses
-        fields=[
-            'id',
-            'budget',
-            'amount',
-            'label',
-            'date',
-            'occurances'
-        ]
 
 class BudgetCreateUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Budget
-        fields = [
-            'profile',
-            'label',
-            'category',
-            'amount'
-        ]
+	class Meta:
+		model = Budget
+		fields = [
+			'profile',
+			'label',
+			'category',
+			'amount'
+		]
 
-class BudgetAmountUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Budget
-        fields = [
-            'amount'
-        ]
+class ExpenseCreateUpdateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Expense
+		fields = [
+			'profile',
+			'label',
+			'amount'
+		]
 
-class ExpensesCreateUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Expenses
-        fields=[
-            'budget',
-            'amount',
-            'label',
-            'date',
-            'occurances'
-        ]
+
+class TransactionCreateUpdateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Transaction
+		fields=[
+			'user',
+			'budget',
+			'amount',
+			'label',
+			'date'
+		]
