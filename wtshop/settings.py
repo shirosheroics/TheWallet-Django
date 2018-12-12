@@ -24,9 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '+sb2j2pxmv^i(xvyt8wjc0l5pe*0c@$nqh3d7@u%&f)+2(mg=v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['68.183.217.91', '127.0.0.1']
 
 
 # Application definition
@@ -80,8 +80,12 @@ WSGI_APPLICATION = 'wtshop.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'django',
+        'USER': 'django',
+        'PASSWORD': '868512c16032c7786d4c32d60bd7256b',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
