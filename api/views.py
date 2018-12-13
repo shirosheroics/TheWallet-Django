@@ -1,4 +1,4 @@
-from .models import (Expense, Transaction, Budget, Profile)
+from .models import (Expense, Transaction, Budget, Profile, Goal, Deposit)
 from django.contrib.auth.models import User
 from rest_framework.generics import (
 	ListAPIView,
@@ -14,6 +14,11 @@ from .serializers import (
 BudgetSerializer, 
 BudgetCreateUpdateSerializer )
 
+# Goal
+from .serializers import (
+GoalSerializer, 
+GoalCreateUpdateSerializer )
+
 # Expense
 from .serializers import (
 ExpenseSerializer, 
@@ -23,6 +28,11 @@ ExpenseCreateUpdateSerializer )
 from .serializers import (
 TransactionSerializer,
 TransactionCreateUpdateSerializer)
+
+# Deposit
+from .serializers import (
+DepositSerializer,
+DepositCreateUpdateSerializer)
 
 # Profile
 from .serializers import (ProfileSerializer, ProfileCreateUpdateSerializer)
@@ -84,9 +94,13 @@ class ProfileUpdateAPIView(RetrieveUpdateAPIView):
 			profile.dob = valid_data['dob']
 			profile.gender = valid_data['gender']
 			profile.income = valid_data['income']
+			profile.balance = valid_data['balance']
+			profile.savings = valid_data['savings']
 			profile.save()
 			return Response(ProfileSerializer(profile).data, status=HTTP_200_OK)
 		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+# Transaction
 
 class TransactionListAPIView(ListAPIView):
 	queryset = Transaction.objects.all()
@@ -115,6 +129,9 @@ class TransactionCreateAPIView(CreateAPIView):
 				'label': valid_data['label']
 			}
 			trans=Transaction.objects.create(**new_data)
+			budget= Budget.objects.get(id=trans.budget.id)
+			budget.balance = float(budget.balance)-float(trans.amount)
+			budget.save()
 			return Response(TransactionSerializer(trans).data, status=HTTP_200_OK)
 		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -124,6 +141,9 @@ class TransactionCreateUpdateAPIView(RetrieveUpdateAPIView):
 	lookup_field = 'id'
 	lookup_url_kwarg = 'transaction_id'
 	permission_classes = [IsAuthenticated]
+
+
+#Budgets
 
 class BudgetListAPIView(RetrieveAPIView):
 	serializer_class = BudgetSerializer
@@ -150,6 +170,7 @@ class BudgetCreateAPIView(CreateAPIView):
 				'amount': valid_data['amount'],
 				'profile': Profile.objects.get(user=request.user.id),
 				'label': valid_data['label'],
+				'balance': valid_data['amount']
 			}
 			bud = Budget.objects.create(**new_data)
 			return Response(BudgetSerializer(bud).data, status=HTTP_200_OK)
@@ -160,6 +181,47 @@ class BudgetCreateUpdateAPIView(RetrieveUpdateAPIView):
 	serializer_class = BudgetCreateUpdateSerializer
 	lookup_field = 'id'
 	lookup_url_kwarg = 'budget_id'
+	permission_classes = [IsAuthenticated]
+
+#Goal
+
+class GoalListAPIView(RetrieveAPIView):
+	serializer_class = GoalSerializer
+	permission_classes =[IsAuthenticated]
+
+	def get(self, request, format=None):
+		if request.user.is_anonymous:
+			return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		profile= Profile.objects.get(user=request.user)
+		goal =GoalSerializer(Goal.objects.filter(profile=profile), many=True)
+		return Response(goal.data, status=HTTP_200_OK)
+
+class GoalCreateAPIView(CreateAPIView):
+	serializer_class = GoalCreateUpdateSerializer
+	permission_classes =[IsAuthenticated]
+
+	def post(self, request):
+		my_data = request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			new_data = {
+				'end_date': valid_data['end_date'],
+				'amount': valid_data['amount'],
+				'profile': Profile.objects.get(user=request.user.id),
+				'label': valid_data['label'],
+				'balance': valid_data['amount'],
+				'description': valid_data['description']
+			}
+			goal = Goal.objects.create(**new_data)
+			return Response(GoalSerializer(goal).data, status=HTTP_200_OK)
+		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class GoalCreateUpdateAPIView(RetrieveUpdateAPIView):
+	queryset = Goal.objects.all()
+	serializer_class = GoalCreateUpdateSerializer
+	lookup_field = 'id'
+	lookup_url_kwarg = 'goal_id'
 	permission_classes = [IsAuthenticated]
 
 
@@ -191,6 +253,9 @@ class ExpenseCreateAPIView(CreateAPIView):
 				'label': valid_data['label'],
 			}
 			exp = Expense.objects.create(**new_data)
+			profile = Profile.objects.get(user=request.user)
+			profile.balance= float(profile.balance) - float(exp.amount)
+			profile.save()
 			return Response(ExpenseSerializer(exp).data, status=HTTP_200_OK)
 		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -199,6 +264,52 @@ class ExpenseCreateUpdateAPIView(RetrieveUpdateAPIView):
 	serializer_class = ExpenseCreateUpdateSerializer
 	lookup_field = 'id'
 	lookup_url_kwarg = 'expense_id'
+	permission_classes = [IsAuthenticated]
+
+
+# Deposits 
+
+class DepositListAPIView(ListAPIView):
+	queryset = Deposit.objects.all()
+	serializer_class = DepositSerializer
+	permission_classes = [IsAuthenticated]
+
+	# def get(self, request, format=None):
+	# 	if request.user.is_anonymous:
+	# 	    return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+	# 	goal= Goal.objects.get(id = )
+	# 	Deposit = DepositSerializer(Deposit.objects.get(goal=Goal.objects.get(id =  )request.user))
+	# 	return Response(profile.data, status=HTTP_200_OK)
+
+class DepositCreateAPIView(CreateAPIView):
+	serializer_class = DepositCreateUpdateSerializer
+	permission_classes = [IsAuthenticated]
+
+	def post(self, request):
+		my_data = request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			new_data = {
+				'goal': Goal.objects.get(id=valid_data['goal']),
+				'amount': valid_data['amount'],
+				'label': valid_data['label']
+			}
+			dep=Deposit.objects.create(**new_data)
+			goal=Goal.objects.get(id=dep.goal.id)
+			goal.balance= float(goal.balance)-float(dep.amount)
+			goal.save()
+			profile=Profile.objects.get(user=request.user)
+			profile.savings = float(profile.savings)-float(dep.amount)			
+			profile.save()
+			return Response(DepositSerializer(dep).data, status=HTTP_200_OK)
+		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class DepositCreateUpdateAPIView(RetrieveUpdateAPIView):
+	queryset = Deposit.objects.all()
+	serializer_class = DepositCreateUpdateSerializer
+	lookup_field = 'id'
+	lookup_url_kwarg = 'deposit_id'
 	permission_classes = [IsAuthenticated]
 
 

@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '+sb2j2pxmv^i(xvyt8wjc0l5pe*0c@$nqh3d7@u%&f)+2(mg=v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['68.183.217.91', '127.0.0.1']
 
@@ -77,8 +77,15 @@ WSGI_APPLICATION = 'TheWallet-Django.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-
-DATABASES = {
+if (DEBUG):
+ DATABASES = {
+   'default': {
+       'ENGINE': 'django.db.backends.sqlite3',
+       'NAME': os.path.join(BASE_DIR, 'db.postgresql_psycopg2'),
+   }
+ }
+else:
+ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'django',
@@ -87,7 +94,8 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     }
-}
+ }
+
 
 
 # Password validation

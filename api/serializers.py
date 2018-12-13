@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import (Budget, Transaction, Profile , Expense)
+from .models import (Budget, Transaction, Profile , Expense, Goal, Deposit)
 
 class UserCreateSerializer(serializers.ModelSerializer):
 	password = serializers.CharField(write_only=True)
@@ -74,12 +74,40 @@ class BudgetSerializer(serializers.ModelSerializer):
 			'label',
 			'category',
 			'amount',
+			'balance',
 			'transactions'
+		]
+
+class DepositSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Deposit
+		fields=[
+			'id',
+			'goal',
+			'amount',
+			'label',
+			'date',
+		]
+
+class GoalSerializer(serializers.ModelSerializer):
+	deposits = DepositSerializer(many=True, read_only=True)
+	class Meta:
+		model = Goal
+		fields = [
+			'id',
+			'profile',
+			'label',
+			'end_date',
+			'amount',
+			'description',
+			'balance',
+			'deposits'
 		]
 
 class ProfileSerializer(serializers.ModelSerializer):
 	user = UserSerializer()
 	budgets= BudgetSerializer(many=True, read_only=True)
+	goals=GoalSerializer(many=True, read_only=True)
 	class Meta:
 		model = Profile
 		fields = [  
@@ -89,7 +117,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 		'dob',
 		'gender',
 		'income',
-		'budgets'
+		'balance',
+		'savings',
+		'budgets',
+		'goals'
 			]
 
 class ProfileCreateUpdateSerializer(serializers.ModelSerializer):
@@ -99,6 +130,8 @@ class ProfileCreateUpdateSerializer(serializers.ModelSerializer):
 		'phoneNo',
 		'dob',
 		'gender',
+		'balance',
+		'savings',
 		'income'
 			]
 
@@ -121,7 +154,20 @@ class BudgetCreateUpdateSerializer(serializers.ModelSerializer):
 			'profile',
 			'label',
 			'category',
+			'balance',
 			'amount'
+		]
+
+class GoalCreateUpdateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Goal
+		fields = [
+			'profile',
+			'label',
+			'end_date',
+			'amount',
+			'description',
+			'balance'
 		]
 
 class ExpenseCreateUpdateSerializer(serializers.ModelSerializer):
@@ -143,4 +189,14 @@ class TransactionCreateUpdateSerializer(serializers.ModelSerializer):
 			'amount',
 			'label',
 			'date'
+		]
+
+class DepositCreateUpdateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Deposit
+		fields=[
+			'goal',
+			'amount',
+			'label',
+			'date',
 		]
