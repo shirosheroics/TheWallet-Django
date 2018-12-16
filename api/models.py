@@ -64,7 +64,7 @@ class Deposit(models.Model):
 	date = models.DateField(auto_now_add=True)
 
 	def __str__(self):
-		return self.id
+		return str(self.id)
 
 class Transaction(models.Model):
 
