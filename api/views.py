@@ -293,8 +293,7 @@ class DepositCreateAPIView(CreateAPIView):
 			valid_data = serializer.data
 			new_data = {
 				'goal': Goal.objects.get(id=valid_data['goal']),
-				'amount': valid_data['amount'],
-				'label': valid_data['label']
+				'amount': valid_data['amount']
 			}
 			dep=Deposit.objects.create(**new_data)
 			goal=Goal.objects.get(id=dep.goal.id)

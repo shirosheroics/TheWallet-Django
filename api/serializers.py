@@ -198,6 +198,5 @@ class DepositCreateUpdateSerializer(serializers.ModelSerializer):
 		model = Deposit
 		fields=[
 			'goal',
-			'amount',
-			'label'
+			'amount'
 		]
