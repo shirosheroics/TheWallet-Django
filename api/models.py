@@ -18,6 +18,7 @@ class Profile(models.Model):
 	income=models.IntegerField(null=True)
 	balance = models.DecimalField( max_digits=10, decimal_places=3, null=True)
 	savings = models.DecimalField( max_digits=10, decimal_places=3, null=True)
+	automated = models.BooleanField(default=False)
 
 	def __str__(self):
 		return self.user.username
@@ -38,6 +39,7 @@ class Budget(models.Model):
 	category = models.CharField(max_length=13, choices=TYPE_CHOICE)
 	amount = models.DecimalField( max_digits=10, decimal_places=3)
 	balance = models.DecimalField( max_digits=10, decimal_places=3, null=True)
+	date = models.DateField(auto_now_add=True)
 	
 	
 	def __str__(self):
@@ -59,7 +61,6 @@ class Goal(models.Model):
 class Deposit(models.Model):
 	goal = models.ForeignKey(Goal, default=1, related_name='deposits', on_delete=models.CASCADE)
 	amount = models.DecimalField( max_digits=10, decimal_places=3)
-	label = models.CharField(max_length=120)
 	date = models.DateField(auto_now_add=True)
 
 	def __str__(self):

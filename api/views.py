@@ -96,6 +96,7 @@ class ProfileUpdateAPIView(RetrieveUpdateAPIView):
 			profile.income = valid_data['income']
 			profile.balance = valid_data['balance']
 			profile.savings = valid_data['savings']
+			profile.automated = valid_data['automated']
 			profile.save()
 			return Response(ProfileSerializer(profile).data, status=HTTP_200_OK)
 		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)

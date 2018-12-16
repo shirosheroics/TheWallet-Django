@@ -75,6 +75,7 @@ class BudgetSerializer(serializers.ModelSerializer):
 			'category',
 			'amount',
 			'balance',
+			'date',
 			'transactions'
 		]
 
@@ -85,7 +86,6 @@ class DepositSerializer(serializers.ModelSerializer):
 			'id',
 			'goal',
 			'amount',
-			'label',
 			'date',
 		]
 
@@ -119,6 +119,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 		'income',
 		'balance',
 		'savings',
+		'automated',
 		'budgets',
 		'goals'
 			]
@@ -132,6 +133,7 @@ class ProfileCreateUpdateSerializer(serializers.ModelSerializer):
 		'gender',
 		'balance',
 		'savings',
+		'automated',
 		'income'
 			]
 
@@ -197,6 +199,5 @@ class DepositCreateUpdateSerializer(serializers.ModelSerializer):
 		fields=[
 			'goal',
 			'amount',
-			'label',
-			'date',
+			'label'
 		]
