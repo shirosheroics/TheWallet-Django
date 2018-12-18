@@ -153,6 +153,7 @@ class BudgetCreateUpdateSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Budget
 		fields = [
+			'id',
 			'profile',
 			'label',
 			'category',
