@@ -164,6 +164,7 @@ class GoalCreateUpdateSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Goal
 		fields = [
+			'id',
 			'profile',
 			'label',
 			'end_date',
