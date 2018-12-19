@@ -21,6 +21,7 @@ class Profile(models.Model):
 	automated = models.BooleanField(default=False)
 	latitude = model.CharField(max_length=20,null=True)
 	longitude = model.CharField(max_length=20,null=True)
+	accuracy=model.IntegerField(null=True)
 
 	def __str__(self):
 		return self.user.username

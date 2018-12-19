@@ -122,6 +122,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 		'automated',
 		'longitude',
 		'latitude',
+		'accuracy',
 		'budgets',
 		'goals'
 			]
@@ -138,6 +139,7 @@ class ProfileCreateUpdateSerializer(serializers.ModelSerializer):
 		'automated',
 		'longitude',
 		'latitude',
+		'accuracy',
 		'income'
 			]
 
