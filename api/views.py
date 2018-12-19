@@ -97,6 +97,8 @@ class ProfileUpdateAPIView(RetrieveUpdateAPIView):
 			profile.balance = valid_data['balance']
 			profile.savings = valid_data['savings']
 			profile.automated = valid_data['automated']
+			profile.latitude = valid_data['latitude']
+			profile.longitude = valid_data['longitude']
 			profile.save()
 			return Response(ProfileSerializer(profile).data, status=HTTP_200_OK)
 		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
