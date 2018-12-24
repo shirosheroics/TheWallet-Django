@@ -176,8 +176,10 @@ class BudgetCreateAPIView(CreateAPIView):
 				}
 				bud = Budget.objects.create(**new_data)
 				tempBud.append(BudgetSerializer(bud).data)
+			else:
+				return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 		return Response(tempBud, status=HTTP_200_OK)
-		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		
 
 class BudgetCreateUpdateAPIView(RetrieveUpdateAPIView):
 	queryset = Budget.objects.all()
@@ -216,11 +218,13 @@ class GoalCreateAPIView(CreateAPIView):
 					'label': valid_data['label'],
 					'balance': valid_data['amount'],
 					'description': valid_data['description']
+					
 				}
 				goal = Goal.objects.create(**new_data)
 				tempGoal.append(GoalSerializer(goal).data)
+			else :
+				return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 		return Response(tempGoal, status=HTTP_200_OK)
-		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class GoalCreateUpdateAPIView(RetrieveUpdateAPIView):
 	queryset = Goal.objects.all()
@@ -263,8 +267,10 @@ class ExpenseCreateAPIView(CreateAPIView):
 				profile.balance= float(profile.balance) - float(exp.amount)
 				profile.save()
 				tempExp.append(ExpenseSerializer(exp).data)
+			else:
+				return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 		return Response(tempExp, status=HTTP_200_OK)
-		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		
 
 class ExpenseCreateUpdateAPIView(RetrieveUpdateAPIView):
 	queryset = Expense.objects.all()
