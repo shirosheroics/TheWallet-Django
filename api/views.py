@@ -207,10 +207,12 @@ class GoalCreateAPIView(CreateAPIView):
 
 	def post(self, request):
 		tempGoal=[]
+		print(request.data)
 		for my_data in request.data:
 			serializer = self.serializer_class(data=my_data)
 			if serializer.is_valid():
 				valid_data = serializer.data
+				# print(valid_data)
 				new_data = {
 					'end_date': valid_data['end_date'],
 					'amount': valid_data['amount'],

@@ -171,7 +171,6 @@ class GoalCreateUpdateSerializer(serializers.ModelSerializer):
 			'end_date',
 			'amount',
 			'description',
-			'balance'
 		]
 
 class ExpenseCreateUpdateSerializer(serializers.ModelSerializer):
