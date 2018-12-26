@@ -120,6 +120,9 @@ class ProfileSerializer(serializers.ModelSerializer):
 		'balance',
 		'savings',
 		'automated',
+		'longitude',
+		'latitude',
+		'accuracy',
 		'budgets',
 		'goals'
 			]
@@ -134,6 +137,9 @@ class ProfileCreateUpdateSerializer(serializers.ModelSerializer):
 		'balance',
 		'savings',
 		'automated',
+		'longitude',
+		'latitude',
+		'accuracy',
 		'income'
 			]
 
