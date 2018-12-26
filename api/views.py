@@ -165,20 +165,24 @@ class BudgetCreateAPIView(CreateAPIView):
 	permission_classes =[IsAuthenticated]
 
 	def post(self, request):
-		my_data = request.data
-		serializer = self.serializer_class(data=my_data)
-		if serializer.is_valid():
-			valid_data = serializer.data
-			new_data = {
-				'category': valid_data['category'],
-				'amount': valid_data['amount'],
-				'profile': Profile.objects.get(user=request.user.id),
-				'label': valid_data['label'],
-				'balance': valid_data['amount']
-			}
-			bud = Budget.objects.create(**new_data)
-			return Response(BudgetSerializer(bud).data, status=HTTP_200_OK)
-		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		tempBud=[]
+		for my_data in request.data:
+			serializer = self.serializer_class(data=my_data)
+			if serializer.is_valid():
+				valid_data = serializer.data
+				new_data = {
+					'category': valid_data['category'],
+					'amount': valid_data['amount'],
+					'profile': Profile.objects.get(user=request.user.id),
+					'label': valid_data['label'],
+					'balance': valid_data['amount']
+				}
+				bud = Budget.objects.create(**new_data)
+				tempBud.append(BudgetSerializer(bud).data)
+			else:
+				return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		return Response(tempBud, status=HTTP_200_OK)
+		
 
 class BudgetCreateUpdateAPIView(RetrieveUpdateAPIView):
 	queryset = Budget.objects.all()
@@ -205,21 +209,27 @@ class GoalCreateAPIView(CreateAPIView):
 	permission_classes =[IsAuthenticated]
 
 	def post(self, request):
-		my_data = request.data
-		serializer = self.serializer_class(data=my_data)
-		if serializer.is_valid():
-			valid_data = serializer.data
-			new_data = {
-				'end_date': valid_data['end_date'],
-				'amount': valid_data['amount'],
-				'profile': Profile.objects.get(user=request.user.id),
-				'label': valid_data['label'],
-				'balance': valid_data['amount'],
-				'description': valid_data['description']
-			}
-			goal = Goal.objects.create(**new_data)
-			return Response(GoalSerializer(goal).data, status=HTTP_200_OK)
-		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		tempGoal=[]
+		print(request.data)
+		for my_data in request.data:
+			serializer = self.serializer_class(data=my_data)
+			if serializer.is_valid():
+				valid_data = serializer.data
+				# print(valid_data)
+				new_data = {
+					'end_date': valid_data['end_date'],
+					'amount': valid_data['amount'],
+					'profile': Profile.objects.get(user=request.user.id),
+					'label': valid_data['label'],
+					'balance': valid_data['amount'],
+					'description': valid_data['description']
+					
+				}
+				goal = Goal.objects.create(**new_data)
+				tempGoal.append(GoalSerializer(goal).data)
+			else :
+				return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		return Response(tempGoal, status=HTTP_200_OK)
 
 class GoalCreateUpdateAPIView(RetrieveUpdateAPIView):
 	queryset = Goal.objects.all()
@@ -247,21 +257,25 @@ class ExpenseCreateAPIView(CreateAPIView):
 	permission_classes =[IsAuthenticated]
 
 	def post(self, request):
-		my_data = request.data
-		serializer = self.serializer_class(data=my_data)
-		if serializer.is_valid():
-			valid_data = serializer.data
-			new_data = {
-				'amount': valid_data['amount'],
-				'profile': Profile.objects.get(user=request.user.id),
-				'label': valid_data['label'],
-			}
-			exp = Expense.objects.create(**new_data)
-			profile = Profile.objects.get(user=request.user)
-			profile.balance= float(profile.balance) - float(exp.amount)
-			profile.save()
-			return Response(ExpenseSerializer(exp).data, status=HTTP_200_OK)
-		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		tempExp=[]
+		for my_data in request.data:
+			serializer = self.serializer_class(data=my_data)
+			if serializer.is_valid():
+				valid_data = serializer.data
+				new_data = {
+					'amount': valid_data['amount'],
+					'profile': Profile.objects.get(user=request.user.id),
+					'label': valid_data['label'],
+				}
+				exp = Expense.objects.create(**new_data)
+				profile = Profile.objects.get(user=request.user)
+				profile.balance= float(profile.balance) - float(exp.amount)
+				profile.save()
+				tempExp.append(ExpenseSerializer(exp).data)
+			else:
+				return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+		return Response(tempExp, status=HTTP_200_OK)
+		
 
 class ExpenseCreateUpdateAPIView(RetrieveUpdateAPIView):
 	queryset = Expense.objects.all()

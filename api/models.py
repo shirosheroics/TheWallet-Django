@@ -17,7 +17,7 @@ class Profile(models.Model):
 	gender=models.CharField(max_length=6, choices=GENDER_CHOICE, null=True)
 	income=models.IntegerField(null=True)
 	balance = models.DecimalField( max_digits=10, decimal_places=3, null=True)
-	savings = models.DecimalField( max_digits=10, decimal_places=3, null=True)
+	savings = models.DecimalField(default=0, max_digits=10, decimal_places=3, null=True)
 	automated = models.BooleanField(default=False)
 	latitude = models.CharField(max_length=20,null=True)
 	longitude = models.CharField(max_length=20,null=True)
@@ -39,7 +39,7 @@ class Budget(models.Model):
 
 	profile= models.ForeignKey(Profile, default=1, related_name='budgets',  on_delete=models.CASCADE)
 	label=models.CharField(max_length=120)
-	category = models.CharField(max_length=13, choices=TYPE_CHOICE)
+	category = models.CharField(max_length=20, choices=TYPE_CHOICE)
 	amount = models.DecimalField( max_digits=10, decimal_places=3)
 	balance = models.DecimalField( max_digits=10, decimal_places=3, null=True)
 	date = models.DateField(auto_now_add=True)
