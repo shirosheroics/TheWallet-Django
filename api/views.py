@@ -143,6 +143,40 @@ class TransactionCreateUpdateAPIView(RetrieveUpdateAPIView):
 	lookup_url_kwarg = 'transaction_id'
 	permission_classes = [IsAuthenticated]
 
+	def put(self, request, transaction_id):
+		my_data = request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			transaction = Transaction.objects.get(id=transaction_id)
+			budget= Budget.objects.get(id=valid_data['budget'])
+			budget.balance = float(budget.balance)+(float(transaction.amount)-float(valid_data['amount']))
+			transaction.amount = valid_data['amount']
+			transaction.label = valid_data['label']
+			transaction.save()
+			budget.save()
+			return Response(TransactionSerializer(transaction).data, status=HTTP_200_OK)
+		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class TransactionDeleteView(DestroyAPIView):
+	queryset = Transaction.objects.all()
+	serializer_class = TransactionSerializer
+	lookup_field = 'id'
+	lookup_url_kwarg = 'transaction_id'
+	permission_classes = [IsAuthenticated]
+
+	def delete(self, request, transaction_id):
+		my_data = request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			budget= Budget.objects.get(id=valid_data['budget'])
+			budget.balance = float(budget.balance)+float(valid_data['amount'])
+			budget.save()
+			transaction = Transaction.objects.get(id=transaction_id)
+			transaction.delete()
+			return Response((transaction_id), status=HTTP_200_OK)
+		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 #Budgets
 
@@ -187,6 +221,15 @@ class BudgetCreateUpdateAPIView(RetrieveUpdateAPIView):
 	lookup_field = 'id'
 	lookup_url_kwarg = 'budget_id'
 	permission_classes = [IsAuthenticated]
+
+
+class BudgetDeleteAPIView(DestroyAPIView):
+	queryset = Budget.objects.all()
+	serializer_class = BudgetCreateUpdateSerializer
+	lookup_field = 'id'
+	lookup_url_kwarg = 'budget_id'
+	permission_classes = [IsAuthenticated]
+
 
 #Goal
 
@@ -235,6 +278,23 @@ class GoalCreateUpdateAPIView(RetrieveUpdateAPIView):
 	lookup_url_kwarg = 'goal_id'
 	permission_classes = [IsAuthenticated]
 
+class GoalDeleteAPIView(DestroyAPIView):
+	queryset = Goal.objects.all()
+	lookup_field = 'id'
+	lookup_url_kwarg = 'goal_id'
+	permission_classes = [IsAuthenticated]
+
+	def delete(self, request,goal_id):
+		my_data = request.data
+		if "id" in my_data :
+			goal= Goal.objects.get(id=my_data['id'])
+			total_deposits=float(goal.amount)-float(goal.balance)
+			profile=Profile.objects.get(user=request.user)
+			profile.savings = float(profile.savings)+float(total_deposits)			
+			profile.save()
+			goal.delete()
+			return Response((goal_id), status=HTTP_200_OK)
+		return Response("Goal id not found", status=HTTP_400_BAD_REQUEST)
 
 #Expense
 
@@ -280,6 +340,46 @@ class ExpenseCreateUpdateAPIView(RetrieveUpdateAPIView):
 	lookup_field = 'id'
 	lookup_url_kwarg = 'expense_id'
 	permission_classes = [IsAuthenticated]
+
+	def put(self, request,expense_id):
+		my_data= request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			# new_data = {
+			# 	'amount': valid_data['amount'],
+			# 	'profile': Profile.objects.get(user=request.user.id),
+			# 	'label': valid_data['label'],
+			# }
+			exp = Expense.objects.get(id=expense_id)
+			old_amount=exp.amount
+			exp.amount=valid_data['amount'] 
+			exp.label=valid_data['label'] 
+			profile = Profile.objects.get(user=request.user)
+			profile.balance= float(profile.balance) + (float(old_amount)-float(valid_data['amount'] ))
+			profile.save()
+			exp.save()
+			return Response(ExpenseCreateUpdateSerializer(exp).data, status=HTTP_200_OK)
+		else:
+			return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class ExpenseDeleteAPIView(DestroyAPIView):
+	queryset = Expense.objects.all()
+	lookup_field = 'id'
+	lookup_url_kwarg = 'expense_id'
+	permission_classes = [IsAuthenticated]
+
+	def delete(self, request,expense_id):
+		my_data = request.data
+		if "id" in my_data :
+			expense= Expense.objects.get(id=my_data['id'])
+			profile=Profile.objects.get(user=request.user)
+			profile.balance = float(profile.balance)+float(expense.amount)			
+			profile.save()
+			expense.delete()
+			return Response((expense_id), status=HTTP_200_OK)
+		return Response("Expense id not found", status=HTTP_400_BAD_REQUEST)
 
 
 # Deposits 
@@ -327,3 +427,25 @@ class DepositCreateUpdateAPIView(RetrieveUpdateAPIView):
 	permission_classes = [IsAuthenticated]
 
 
+class DepositDeleteView(DestroyAPIView):
+	queryset =Deposit.objects.all()
+	serializer_class =DepositSerializer
+	lookup_field = 'id'
+	lookup_url_kwarg = 'deposit_id'
+	permission_classes = [IsAuthenticated]
+
+	def delete(self, request,deposit_id):
+		my_data = request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			deposit =Deposit.objects.get(id=deposit_id)
+			goal= Goal.objects.get(id=valid_data['goal'])
+			goal.balance = float(goal.balance)+float(valid_data['amount'])
+			goal.save()
+			profile=Profile.objects.get(user=request.user)
+			profile.savings = float(profile.savings)+float(deposit.amount)			
+			profile.save()
+			deposit.delete()
+			return Response((deposit_id), status=HTTP_200_OK)
+		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
