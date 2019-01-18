@@ -429,6 +429,19 @@ class DepositCreateUpdateAPIView(RetrieveUpdateAPIView):
 	lookup_url_kwarg = 'deposit_id'
 	permission_classes = [IsAuthenticated]
 
+	def put(self, request, deposit_id):
+		my_data = request.data
+		serializer = self.serializer_class(data=my_data)
+		if serializer.is_valid():
+			valid_data = serializer.data
+			deposit = Deposit.objects.get(id=deposit_id)
+			goal= Goal.objects.get(id=valid_data['goal'])
+			goal.balance = float(goal.balance)+(float(deposit.amount)-float(valid_data['amount']))
+			deposit.amount = valid_data['amount']
+			deposit.save()
+			goal.save()
+			return Response(DepositCreateUpdateSerializer(deposit).data, status=HTTP_200_OK)
+		return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class DepositDeleteView(DestroyAPIView):
 	queryset =Deposit.objects.all()
