@@ -17,7 +17,7 @@ class Profile(models.Model):
 	gender=models.CharField(max_length=6, choices=GENDER_CHOICE, null=True)
 	income=models.IntegerField(null=True)
 	balance = models.DecimalField( max_digits=10, decimal_places=3, null=True)
-	savings = models.DecimalField(default=0, max_digits=10, decimal_places=3, null=True)
+	savings = models.DecimalField(default=0.000, max_digits=10, decimal_places=3, null=True)
 	automated = models.BooleanField(default=False)
 
 	def __str__(self):
