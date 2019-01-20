@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
+# Just to commit
 import os
 import datetime
 
@@ -26,7 +27,15 @@ SECRET_KEY = "+sb2j2pxmv^i(xvyt8wjc0l5pe*0c@$nqh3d7@u%&f)+2(mg=v"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["68.183.217.91", "127.0.0.1", "192.168.100.39", "192.168.100.32"]
+ALLOWED_HOSTS = [
+    "68.183.217.91",
+    "172.20.10.6",
+    "127.0.0.1",
+    "192.168.100.39",
+    "192.168.8.107",
+    "192.168.1.102",
+    "192.168.100.32",
+]
 
 
 # Application definition
@@ -137,4 +146,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-

@@ -101,41 +101,43 @@ class GoalSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    budgets = BudgetSerializer(many=True, read_only=True)
-    goals = GoalSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Profile
-        fields = [
-            "user",
-            "id",
-            "phoneNo",
-            "dob",
-            "gender",
-            "income",
-            "balance",
-            "savings",
-            "automated",
-            "budgets",
-            "goals",
-            "expenses",
-        ]
-
+	user = UserSerializer()
+	budgets= BudgetSerializer(many=True, read_only=True)
+	goals=GoalSerializer(many=True, read_only=True)
+	class Meta:
+		model = Profile
+		fields = [
+		'user',
+		'id',
+		'phoneNo',
+		'dob',
+		'gender',
+		'income',
+		'balance',
+		'savings',
+		'automated',
+		'longitude',
+		'latitude',
+		'accuracy',
+		'budgets',
+		'goals'
+			]
 
 class ProfileCreateUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = [
-            "phoneNo",
-            "dob",
-            "gender",
-            "balance",
-            "savings",
-            "automated",
-            "income",
-        ]
-
+	class Meta:
+		model = Profile
+		fields = [
+		'phoneNo',
+		'dob',
+		'gender',
+		'balance',
+		'savings',
+		'automated',
+		'longitude',
+		'latitude',
+		'accuracy',
+		'income'
+			]
 
 class ExpenseSerializer(serializers.ModelSerializer):
     # profile = ProfileSerializer()
@@ -180,4 +182,3 @@ class DepositCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deposit
         fields = ["goal", "amount"]
-
